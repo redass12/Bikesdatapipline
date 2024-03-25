@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
+    <data-source source="LOCAL" name="Zeppelin" read-only="true" uuid="bc4423ff-1889-4368-a774-cf64bab10249">
+      <synchronize>true</synchronize>
+      <remarks>Wrapper For Zeppelin Spark from Big Data Tools plugin</remarks>
+      <jdbc-driver>com.dbschema.ZeppelinSparkJdbcDriver</jdbc-driver>
+      <jdbc-url>Zeppelin@ZeppelinConnections@-8421560540811220973:test</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="forceUseDriverIcon" value="true" />
+        <property name="connectionId" value="Zeppelin@ZeppelinConnections@-8421560540811220973:test" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+    <data-source source="LOCAL" name="Zeppelin" read-only="true" uuid="0fe6bbb6-a519-43f5-9fbe-5ce3eb13e4dc">
+      <synchronize>true</synchronize>
+      <remarks>Wrapper For Zeppelin Spark from Big Data Tools plugin</remarks>
+      <jdbc-driver>com.dbschema.ZeppelinSparkJdbcDriver</jdbc-driver>
+      <jdbc-url>Zeppelin@ZeppelinConnections@5455342477587795915:test</jdbc-url>
+      <jdbc-additional-properties>
+        <property name="forceUseDriverIcon" value="true" />
+        <property name="connectionId" value="Zeppelin@ZeppelinConnections@5455342477587795915:test" />
+      </jdbc-additional-properties>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
+  </component>
+</project>

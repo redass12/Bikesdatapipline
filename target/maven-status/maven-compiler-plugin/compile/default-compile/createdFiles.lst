@@ -1,0 +1,5 @@
+demo/etl/BikesAnalyticsToDB.class
+demo/etl/BikesLandingToStaging.class
+demo/etl/BikesStagingToAnalytics.class
+demo/etl/writeDatainDeltaformat.class
+demo/etl/BikesDataAnalyticsToDatabase.class
