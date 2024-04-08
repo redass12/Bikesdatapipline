@@ -20,9 +20,9 @@ public class BikesStagingToAnalytics {
                 .appName("Delta Lake with MinIO Example")
                 .master("spark://spark-master:7077")
                 // Définir les configurations pour accéder à MinIO
-                .config("spark.hadoop.fs.s3a.endpoint", "http://172.20.0.4:9000")
-                .config("spark.hadoop.fs.s3a.access.key", "iz3mZTYYtkHKSJj93Jdk")
-                .config("spark.hadoop.fs.s3a.secret.key", "7n7ydGrkFnGGJDd5lSJG4MAECL8bFakKHVddr1ew")
+                .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000")
+                .config("spark.hadoop.fs.s3a.access.key", "TB9iEvxhbUtRS1wNssg6")
+                .config("spark.hadoop.fs.s3a.secret.key", "tq1stZ3ZwPPZIU59nVcTAOgko9JizEhLPoFun7r3")
                 .config("spark.hadoop.fs.s3a.path.style.access", true)
                 .config("spark.delta.logStore.class", "org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
                 .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -32,7 +32,7 @@ public class BikesStagingToAnalytics {
         Dataset<Row> bikesDF = spark.read().format("delta").load("s3a://staging/delta-tables/Bike");
         Dataset<Row> bikeshopsDF = spark.read().format("delta").load("s3a://staging/delta-tables/Bikeshop");
         Dataset<Row> customersDF = spark.read().format("delta").load("s3a://staging/delta-tables/Customer");
-        Dataset<Row> ordersDF = spark.read().format("delta").load("s3a://staging/delta-tables/Oerder");
+        Dataset<Row> ordersDF = spark.read().format("delta").load("s3a://staging/delta-tables/Order");
 
 
 
@@ -42,6 +42,7 @@ public class BikesStagingToAnalytics {
                 .join(bikeshopsDF, ordersDF.col("BikeShopId").equalTo(bikeshopsDF.col("bikeshop_id")), "left_outer")
                 .join(customersDF, ordersDF.col("customerId").equalTo(customersDF.col("CustomerKey")), "left_outer")
                 .select(ordersDF.col("orderId"), ordersDF.col("orderDate"), ordersDF.col("bikeId"), ordersDF.col("BikeShopId"), ordersDF.col("customerId"), ordersDF.col("quantityOrdered"));
+
 
 
 

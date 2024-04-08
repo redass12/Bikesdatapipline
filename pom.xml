@@ -90,12 +90,15 @@
     <dependency>
       <groupId>io.delta</groupId>
       <artifactId>delta-core_2.12</artifactId>
-      <version>2.1.0</version>
+      <version>1.0.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.apache.spark</groupId>
+      <artifactId>spark-sql-kafka-0-10_2.12</artifactId>
+      <version>3.1.2</version> <!-- Use the version that matches your Spark version -->
+    </dependency>
   </dependencies>
-
-
 
   <build>
     <plugins>

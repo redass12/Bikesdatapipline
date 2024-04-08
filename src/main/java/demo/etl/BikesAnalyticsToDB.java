@@ -23,9 +23,9 @@ public class BikesAnalyticsToDB {
                 .appName("Delta Lake with MinIO Example")
                 .master("spark://spark-master:7077")
                 // Définir les configurations pour accéder à MinIO
-                .config("spark.hadoop.fs.s3a.endpoint", "http://172.20.0.4:9000")
-                .config("spark.hadoop.fs.s3a.access.key", "iz3mZTYYtkHKSJj93Jdk")
-                .config("spark.hadoop.fs.s3a.secret.key", "7n7ydGrkFnGGJDd5lSJG4MAECL8bFakKHVddr1ew")
+                .config("spark.hadoop.fs.s3a.endpoint", "http://minio:9000")
+                .config("spark.hadoop.fs.s3a.access.key", "TB9iEvxhbUtRS1wNssg6")
+                .config("spark.hadoop.fs.s3a.secret.key", "tq1stZ3ZwPPZIU59nVcTAOgko9JizEhLPoFun7r3")
                 .config("spark.hadoop.fs.s3a.path.style.access", true)
                 .config("spark.delta.logStore.class", "org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
                 .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -39,6 +39,7 @@ public class BikesAnalyticsToDB {
 
 
 
+        // Aggregate sales data
         Dataset<Row> salesDF = ordersDF.join(bikesDF, ordersDF.col("bikeId").equalTo(bikesDF.col("bike_id")))
                 .join(bikeshopsDF, ordersDF.col("BikeShopId").equalTo(bikeshopsDF.col("bikeshop_id")))
                 .groupBy("BikeShopId", "city", "state", "bike_id", "model", "category1", "category2", "orderDate")
@@ -51,27 +52,54 @@ public class BikesAnalyticsToDB {
                 .withColumn("order_month", month(col("orderDate")));
 
 
+        // Customer Lifetime Value and New Customers
+        Dataset<Row> customerAggregatedDF = ordersDF
+                .join(customersDF, ordersDF.col("customerId").equalTo(customersDF.col("CustomerKey")), "left_outer")
+                .join(bikesDF, ordersDF.col("bikeId").equalTo(bikesDF.col("bike_id")), "left_outer")
+                .join(bikeshopsDF, ordersDF.col("BikeShopId").equalTo(bikeshopsDF.col("bikeshop_id")), "left_outer")
+                .groupBy(customersDF.col("CustomerKey"), customersDF.col("FullName"), customersDF.col("BirthDate"), bikeshopsDF.col("city"), bikeshopsDF.col("state"),customersDF.col("Age"),customersDF.col("Gender"))
+                .agg(
+                        sum(expr("quantityOrdered * price")).as("lifetime_value"),
+                        min(ordersDF.col("orderDate")).as("first_order_date"),
+                        countDistinct(ordersDF.col("orderId")).as("total_orders")
+                );
 
 
 
 
 
-        // Save to postgresql
-        String dbConnectionUrl = "jdbc:postgresql://psql-database:5432/bikesdb";
+        customerAggregatedDF.show();
+
+// Additional customer segmentation can be performed here based on the columns available
 
 
-        // Properties to connect to the database, the JDBC driver is part of our
-        // pom.xml
+
+
+
+
+
+
+// Save to PostgreSQL in the cloud
+        String dbConnectionUrl = "jdbc:postgresql://64.227.77.204:5432/bikeDB";
+
+// Properties to connect to the database
         Properties prop = new Properties();
-
         prop.setProperty("driver", "org.postgresql.Driver");
         prop.setProperty("user", "postgres");
         prop.setProperty("password", "postgres");
 
+// Additional properties might be required depending on your cloud provider
+// For example, SSL connection properties for secure connections
+        prop.setProperty("sslfactory", "org.postgresql.ssl.NonValidatingFactory"); // Use this for a cloud provider that doesn't require client-side SSL certificate validation
 
         salesDF.write()
                 .mode(SaveMode.Overwrite)
                 .jdbc(dbConnectionUrl, "Sales", prop);
+
+        customerAggregatedDF.write()
+                .mode(SaveMode.Overwrite)
+                .jdbc(dbConnectionUrl, "Customers", prop);
+
 
 
     }

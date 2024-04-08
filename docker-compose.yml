@@ -10,6 +10,7 @@ services:
     volumes:
       - ./target:/opt/spark-apps
       - ./conf/master:/opt/spark/conf
+      - ./metrics.properties:/spark/conf/metrics.properties
     environment:
       - SPARK_LOCAL_IP=spark-master
       - SPARK_WORKLOAD=master
@@ -31,6 +32,8 @@ services:
     volumes:
       - ./target:/opt/spark-apps
       - ./conf/worker:/conf
+
+
 
   history:
     image: cluster-apache-spark:3.1.2
@@ -82,59 +85,94 @@ services:
       tail -f /dev/null
       "
 
-  psql-database:
-    image: postgres:11.7-alpine
+#  psql-database:
+#    image: postgres:11.7-alpine
+#    ports:
+#      - "5432:5432"
+#    environment:
+#      - POSTGRES_PASSWORD=postgres
+#      - POSTGRES_DB=spark_labs
+
+  graphite_exporter:
+    image: prom/graphite-exporter
+    command: "--graphite.mapping-config=/tmp/graphite_mapping.conf"
+    container_name: graphite_exporter
+    volumes:
+      - ./graphite_exporter/graphite_mapping.conf:/tmp/graphite_mapping.conf
     ports:
-      - "5432:5432"
-    environment:
-      - POSTGRES_PASSWORD=postgres
-      - POSTGRES_DB=spark_labs
+      - "9108:9108"
+      - "9109:9109"
+      - "9109:9109/udp"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    links:
+      - graphite_exporter
+
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana/grafana.ini:/etc/grafana/grafana.ini
+      - ./grafana/datasource.yaml:/etc/grafana/provisioning/datasources/datasource.yaml
+    links:
+      - prometheus
 
   # Apache Airflow webserver
-  airflow-webserver:
-    image: apache/airflow:latest
-    user: root
-    depends_on:
-      - airflow-scheduler
-      - airflow-init
-      - psql-database
-    ports:
-      - "8081:8080"
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
-      - AIRFLOW__CORE__FERNET_KEY=2SaTHi5bQbMRotWEcowuyerXFG7ICswiBDfr5RKsFuU=
-      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
-      - AIRFLOW__WEBSERVER__SECRET_KEY=you_should_replace_this
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./airflow_logs:/opt/airflow/logs
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: webserver
-
-  airflow-scheduler:
-    image: apache/airflow:latest
-    user: root
-    depends_on:
-      - airflow-init
-      - psql-database
-    environment:
-      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
-      - AIRFLOW__CORE__FERNET_KEY=2SaTHi5bQbMRotWEcowuyerXFG7ICswiBDfr5RKsFuU=
-    volumes:
-      - ./dags:/opt/airflow/dags
-      - ./airflow_logs:/opt/airflow/logs
-      - /var/run/docker.sock:/var/run/docker.sock
-    command: scheduler
-
-  ######
-  # Initialization and upgrade db
-  airflow-init:
-    image: apache/airflow:latest
-    depends_on:
-      - psql-database
-    environment:
-      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
-    command: airflow db init
-
+#  airflow-webserver:
+#    image: apache/airflow:latest
+#    user: root
+#    depends_on:
+#      - airflow-scheduler
+#      - airflow-init
+#      - psql-database
+#    restart: always
+#    ports:
+#      - "8081:8080"
+#    environment:
+#      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+#      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
+#      - AIRFLOW__CORE__FERNET_KEY=2SaTHi5bQbMRotWEcowuyerXFG7ICswiBDfr5RKsFuU=
+#      - AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION=True
+#      - AIRFLOW__WEBSERVER__SECRET_KEY=you_should_replace_this
+#    volumes:
+#      - ./dags:/opt/airflow/dags
+#      - ./airflow_logs:/opt/airflow/logs
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    command: webserver
+#
+#  airflow-scheduler:
+#    image: apache/airflow:latest
+#    user: root
+#    depends_on:
+#      - airflow-init
+#      - psql-database
+#    restart: always
+#    environment:
+#      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+#      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
+#      - AIRFLOW__CORE__FERNET_KEY=2SaTHi5bQbMRotWEcowuyerXFG7ICswiBDfr5RKsFuU=
+#    volumes:
+#      - ./dags:/opt/airflow/dags
+#      - ./airflow_logs:/opt/airflow/logs
+#      - /var/run/docker.sock:/var/run/docker.sock
+#    command: scheduler
+#
+#  ######
+#  # Initialization and upgrade db
+#  airflow-init:
+#    image: apache/airflow:latest
+#    depends_on:
+#      - psql-database
+#    environment:
+#      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres:postgres@psql-database:5432/spark_labs
+#    volumes:
+#      - ./init-airflow.sh:/init-airflow.sh
+#    entrypoint: [ "/bin/bash", "/init-airflow.sh" ]

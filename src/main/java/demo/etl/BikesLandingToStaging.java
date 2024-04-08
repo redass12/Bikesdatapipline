@@ -26,9 +26,9 @@ public class BikesLandingToStaging {
                 .appName("Delta Lake with MinIO Example")
                 .master("spark://spark-master:7077")
                 // Définir les configurations pour accéder à MinIO
-                .config("spark.hadoop.fs.s3a.endpoint", "http://172.20.0.4:9000")
-                .config("spark.hadoop.fs.s3a.access.key", "iz3mZTYYtkHKSJj93Jdk")
-                .config("spark.hadoop.fs.s3a.secret.key", "7n7ydGrkFnGGJDd5lSJG4MAECL8bFakKHVddr1ew")
+                .config("spark.hadoop.fs.s3a.endpoint", " http://minio:9000")
+                .config("spark.hadoop.fs.s3a.access.key", "TB9iEvxhbUtRS1wNssg6")
+                .config("spark.hadoop.fs.s3a.secret.key", "tq1stZ3ZwPPZIU59nVcTAOgko9JizEhLPoFun7r3")
                 .config("spark.hadoop.fs.s3a.path.style.access", true)
                 .config("spark.delta.logStore.class", "org.apache.spark.sql.delta.storage.S3SingleDriverLogStore")
                 .config("spark.hadoop.fs.s3a.impl", "org.apache.hadoop.fs.s3a.S3AFileSystem")
@@ -211,7 +211,6 @@ public class BikesLandingToStaging {
 //        if (invalidDatesDF.count() > 0) {
 //            System.out.println("Warning: Orders with invalid date formats found.");
 //        }
-
 
 
         //write data to staging :

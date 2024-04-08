@@ -1,5 +1,4 @@
 /Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/BikesAnalyticsToDB.java
-/Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/BikesDataAnalyticsToDatabase.java
 /Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/BikesLandingToStaging.java
 /Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/BikesStagingToAnalytics.java
-/Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/writeDatainDeltaformat.java
+/Users/mohamedredataraoui/Documents/Bikes_project/spark-standalone/src/main/java/demo/etl/consumeKafkaData.java
